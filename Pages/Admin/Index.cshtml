@@ -1,0 +1,171 @@
+@page
+@model TiendaVirgenFatima.Pages.Admin.IndexModel
+@{
+    ViewData["Title"] = "Administración de Productos";
+}
+
+<h1 class="my-4 text-center">Administración de Productos</h1>
+
+<form method="post" enctype="multipart/form-data" class="mb-4 p-4 bg-light shadow rounded">
+    <div class="container">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="form-floating">
+                    <input type="text" id="name" name="Product.Name" class="form-control" placeholder="Nombre del producto" required />
+                    <label for="name">Nombre</label>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-floating">
+                    <input type="text" id="description" name="Product.Description" class="form-control" placeholder="Descripción del producto" required />
+                    <label for="description">Descripción</label>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-floating">
+                    <input type="number" step="0.01" id="price" name="Product.Price" class="form-control" placeholder="Precio del producto" required />
+                    <label for="price">Precio</label>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-floating">
+                    <input type="number" id="stock" name="Product.Stock" class="form-control" placeholder="Stock del producto" required />
+                    <label for="stock">Stock</label>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-floating">
+                    <input type="file" id="image" name="ProductImage" class="form-control" accept=".jpg,.jpeg,.png,.gif" />
+                    <label for="image">Imagen</label>
+                </div>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-success btn-lg mt-3 w-100">Añadir Producto</button>
+    </div>
+</form>
+
+<h2 class="my-4 text-center">Productos Existentes</h2>
+<div class="container">
+    <div class="row g-4">
+        @foreach (var product in Model.Products)
+        {
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="card h-100 border-primary shadow-sm rounded-lg">
+                    <img class="card-img-top" src="@product.ImagePath" alt="Imagen de @product.Name" style="height: 200px; object-fit: cover;">
+                    <div class="card-body">
+                        <h5 class="card-title text-primary">@product.Name</h5>
+                        <p class="card-text">@product.Description</p>
+                        <p class="card-text">
+                            <strong>@product.Price.ToString("C")</strong>
+                            <br>
+                            Stock: <span data-product-id="@product.Id">@product.Stock</span>
+                        </p>
+                        <div class="d-flex justify-content-between">
+                            <button class="btn btn-outline-primary btn-sm" onclick="editProduct('@product.Id')">Editar</button>
+                            <button class="btn btn-outline-danger btn-sm" onclick="deleteProduct('@product.Id')">Eliminar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function editProduct(productId) {
+            const newStock = prompt("Ingrese el nuevo stock para el producto:");
+            if (newStock !== null && !isNaN(newStock) && newStock >= 0) {
+                fetch(`/api/products/${productId}/stock`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(parseInt(newStock))
+                }).then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        alert('Error al actualizar el stock');
+                    }
+                });
+            } else {
+                alert('El stock debe ser un número no negativo');
+            }
+        }
+
+        function deleteProduct(productId) {
+            if (confirm("¿Estás seguro de que deseas eliminar este producto?")) {
+                fetch(`/api/products/${productId}`, {
+                    method: 'DELETE'
+                }).then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        alert('Error al eliminar el producto');
+                    }
+                });
+            }
+        }
+    </script>
+}
+
+<style>
+    body {
+        background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%, #fad0c4 100%);
+        color: #333;
+    }
+
+    .bg-light {
+        background-color: #f8f9fa !important;
+    }
+
+    .form-floating > .form-control {
+        height: calc(3.5rem + 2px);
+    }
+
+    .form-floating > label {
+        padding: 1rem 0.75rem;
+    }
+
+    .shadow {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .rounded-lg {
+        border-radius: 0.5rem !important;
+    }
+
+    .g-3 {
+        gap: 1.5rem !important;
+    }
+
+    .g-4 {
+        gap: 2rem !important;
+    }
+
+    .card {
+        transition: transform 0.2s;
+        background: #fff;
+        color: #000;
+    }
+
+        .card:hover {
+            transform: scale(1.02);
+        }
+
+    .card-title {
+        font-size: 1.25rem;
+        font-weight: bold;
+    }
+
+    .btn-outline-primary, .btn-outline-danger {
+        color: #333;
+        border-color: #333;
+    }
+
+        .btn-outline-primary:hover, .btn-outline-danger:hover {
+            color: #000;
+            background-color: #ccc;
+        }
+</style>

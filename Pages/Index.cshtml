@@ -1,0 +1,430 @@
+﻿@page
+@inject TiendaVirgenFatima.Services.ProductService ProductService
+
+@{
+    var products = await ProductService.GetProductsAsync();
+}
+
+<div class="background-gradient"></div>
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="row">
+                @foreach (var product in products)
+                {
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100 shadow-lg rounded-lg border-0">
+                            <a href="@product.ImagePath" data-lightbox="product-images" data-title="@product.Name">
+                                <img class="card-img-top rounded-top" src="@product.ImagePath" alt="Imagen de @product.Name" style="height: 200px; width: 100%; object-fit: cover;">
+                            </a>
+                            <div class="card-body">
+                                <h5 class="card-title text-primary">@product.Name</h5>
+                                <p class="card-text">@product.Description</p>
+                                <p class="card-text">
+                                    <strong>@string.Format(new System.Globalization.CultureInfo("es-PE"), "{0:C}", product.Price)</strong>
+                                    <br>
+                                    Stock: <span id="stock-@product.Id">@product.Stock</span>
+                                </p>
+                                @if (product.Stock > 0)
+                                {
+                                    <button class="btn btn-primary btn-block" onclick="addToCart('@product.Id', '@product.Name', @product.Price, @product.Stock)">
+                                        <i class="fas fa-cart-plus"></i> Comprar
+                                    </button>
+                                }
+                                else
+                                {
+                                    <div class="text-center text-muted">
+                                        <i class="fas fa-robot fa-3x"></i>
+                                        <p>Fuera de stock</p>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="sticky-top" style="top: 20px;">
+                <div class="cart bg-white p-4 rounded-lg shadow-lg">
+                    <h2 class="mb-4"><i class="fas fa-shopping-cart"></i> Carrito de Compras</h2>
+                    <ul id="cartItems" class="list-group mb-3">
+                        <!-- Los elementos del carrito se actualizarán aquí -->
+                    </ul>
+                    <div id="cartTotal" class="cart-total mb-3"></div>
+                    <div id="cartActions" style="display: none;">
+                        <button class="btn btn-danger btn-block mb-2" onclick="clearCart()">Vaciar Carrito</button>
+                        <button class="btn btn-success btn-block mb-2" onclick="showCheckoutForm()">Realizar Compra</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para mensaje de éxito y formulario de pago -->
+<div class="modal fade" id="successModal" tabindex="-1" role="dialog" aria-labelledby="successModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="successModalLabel">Formulario de Pago</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="paymentForm">
+                    <div class="form-group">
+                        <label for="customerName">Nombre</label>
+                        <input type="text" class="form-control" id="customerName" placeholder="Nombre Completo" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Correo Electrónico</label>
+                        <input type="email" class="form-control" id="email" placeholder="correo@ejemplo.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="address">Dirección</label>
+                        <input type="text" class="form-control" id="address" placeholder="Dirección Completa" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="paymentMethod">Método de Pago</label>
+                        <select class="form-control" id="paymentMethod" required>
+                            <option value="creditCard">Tarjeta de Crédito/Débito</option>
+                            <option value="paypal">PayPal</option>
+                            <option value="bankTransfer">Transferencia Bancaria</option>
+                            <option value="yape">Yape</option>
+                        </select>
+                    </div>
+                    <div class="form-group payment-details" id="creditCardDetails">
+                        <label for="cardNumber">Número de Tarjeta</label>
+                        <input type="text" class="form-control" id="cardNumber" placeholder="1234 5678 9012 3456">
+                        <label for="cardHolder">Titular de la Tarjeta</label>
+                        <input type="text" class="form-control" id="cardHolder" placeholder="Nombre Apellido">
+                        <label for="expirationDate">Fecha de Expiración</label>
+                        <input type="text" class="form-control" id="expirationDate" placeholder="MM/AA">
+                        <label for="cvv">CVV</label>
+                        <input type="text" class="form-control" id="cvv" placeholder="123">
+                    </div>
+                    <div class="form-group payment-details" id="paypalDetails" style="display:none;">
+                        <label for="paypalEmail">Correo de PayPal</label>
+                        <input type="email" class="form-control" id="paypalEmail" placeholder="correo@paypal.com">
+                    </div>
+                    <div class="form-group payment-details" id="bankTransferDetails" style="display:none;">
+                        <label for="bankAccount">Número de Cuenta Bancaria</label>
+                        <input type="text" class="form-control" id="bankAccount" placeholder="1234567890">
+                    </div>
+                    <div class="form-group payment-details" id="yapeDetails" style="display:none;">
+                        <label for="yapeNumber">Número de Yape</label>
+                        <input type="text" class="form-control" id="yapeNumber" placeholder="987654321">
+                    </div>
+                    <input type="hidden" id="total" name="total">
+                    <div class="form-group">
+                        <label for="totalAmount">Monto Total</label>
+                        <input type="text" class="form-control" id="totalAmount" readonly>
+                    </div>
+                    <button type="submit" class="btn btn-success btn-block">Pagar</button>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="hideSuccessModal()">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para confirmación de compra -->
+<div class="modal fade" id="confirmationModal" tabindex="-1" role="dialog" aria-labelledby="confirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="confirmationModalLabel">Compra Confirmada</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Su compra ha sido confirmada con éxito.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" data-dismiss="modal" onclick="hideConfirmationModal()">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/js/lightbox.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/css/lightbox.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/5.0.9/signalr.min.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #ff6f61, #ff9966, #ffcc33, #99cc33, #66ccff, #6699ff, #cc66ff);
+            background-size: 400% 400%;
+            color: #333;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .background-gradient {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: inherit;
+            filter: blur(8px);
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .card {
+            transition: transform 0.3s, box-shadow 0.3s;
+            background: #fff;
+            color: #000;
+        }
+
+            .card img {
+                object-fit: cover;
+                width: 100%;
+                height: 200px;
+            }
+
+            .card:hover {
+                transform: scale(1.05);
+                box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            }
+
+        .btn-primary {
+            background-color: #ff6f61;
+            border-color: #ff6f61;
+        }
+
+            .btn-primary:hover {
+                background-color: #ff9966;
+                border-color: #ff9966;
+            }
+
+        .sticky-top {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 1rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-header {
+            border-bottom: none;
+        }
+
+        .modal-body {
+            background: #f8f9fa;
+            padding: 2rem;
+        }
+
+        .modal-footer {
+            border-top: none;
+            justify-content: center;
+        }
+
+        .payment-details {
+            display: none;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8f9fa;
+            padding: 0.75rem 1.25rem;
+            border: 1px solid #dee2e6;
+            border-radius: 0.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .cart-total {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #212529;
+        }
+
+        .remove-btn {
+            background: none;
+            border: none;
+            color: #dc3545;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+            .remove-btn:hover {
+                color: #bd2130;
+            }
+
+        .cart h2 {
+            font-size: 1.5rem;
+            color: #ff6f61;
+            font-weight: bold;
+        }
+
+        .cart .list-group-item {
+            font-size: 1.1rem;
+            color: #333;
+        }
+
+        .cart .btn {
+            font-size: 1rem;
+        }
+    </style>
+    <script>
+        const connection = new signalR.HubConnectionBuilder().withUrl("/productHub").build();
+
+        connection.on("ReceiveCartUpdate", (cartItemsHtml, totalAmount) => {
+            document.getElementById("cartItems").innerHTML = cartItemsHtml;
+            document.getElementById("cartTotal").textContent = `Total: S/${totalAmount.toFixed(2)}`;
+            if (cartItemsHtml.length > 0) {
+                document.getElementById("cartActions").style.display = "block";
+            } else {
+                document.getElementById("cartActions").style.display = "none";
+                document.getElementById("cartTotal").textContent = "";
+            }
+        });
+
+        connection.on("UpdateStock", (productId, stock) => {
+            document.getElementById(`stock-${productId}`).textContent = stock;
+        });
+
+        connection.start().catch(err => console.error(err.toString()));
+
+        let cart = [];
+        let totalAmount = 0;
+
+        function addToCart(productId, name, price, stock) {
+            if (stock <= 0) {
+                alert('El producto está fuera de stock.');
+                return;
+            }
+
+            const product = cart.find(p => p.productId === productId);
+            if (product) {
+                product.quantity++;
+            } else {
+                cart.push({ productId, name, price, quantity: 1 });
+            }
+            updateCartDisplay();
+            sendCartUpdate();
+        }
+
+        function updateCartDisplay() {
+            const cartList = document.getElementById("cartItems");
+            const cartActions = document.getElementById("cartActions");
+            const cartTotal = document.getElementById("cartTotal");
+            cartList.innerHTML = "";
+            totalAmount = 0;
+            cart.forEach(item => {
+                const listItem = document.createElement("li");
+                listItem.className = "cart-item";
+                listItem.innerHTML = `
+                            <div class="item-info">
+                                <span><strong>${item.name}</strong></span>
+                                <span>${item.quantity} x S/${item.price.toFixed(2)}</span>
+                            </div>
+                            <button class="remove-btn" onclick="removeFromCart('${item.productId}')">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        `;
+                cartList.appendChild(listItem);
+                totalAmount += item.quantity * item.price;
+            });
+            cartTotal.textContent = `Total: S/${totalAmount.toFixed(2)}`;
+            if (cart.length > 0) {
+                cartActions.style.display = "block";
+            } else {
+                cartActions.style.display = "none";
+                cartTotal.textContent = "";
+            }
+        }
+
+        function clearCart() {
+            cart = [];
+            updateCartDisplay();
+            sendCartUpdate();
+        }
+
+        function removeFromCart(productId) {
+            cart = cart.filter(item => item.productId !== productId);
+            updateCartDisplay();
+            sendCartUpdate();
+        }
+
+        function sendCartUpdate() {
+            const cartList = document.getElementById("cartItems").innerHTML;
+            connection.invoke("UpdateCart", cartList, totalAmount).catch(err => console.error(err.toString()));
+        }
+
+        function showCheckoutForm() {
+            document.getElementById("total").value = `S/${totalAmount.toFixed(2)}`;
+            document.getElementById("totalAmount").value = `S/${totalAmount.toFixed(2)}`;
+            $('#successModal').modal('show');
+        }
+
+        function hideSuccessModal() {
+            $('#successModal').modal('hide');
+        }
+
+        // Handle payment form submission
+        document.getElementById('paymentForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+            // Lógica de pago
+
+            cart.forEach(item => {
+                connection.invoke("ConfirmPurchase", item.productId, item.quantity).catch(err => console.error(err.toString()));
+            });
+
+            $('#successModal').modal('hide');
+            $('#confirmationModal').modal('show');
+            clearCart();
+        });
+
+        // Show/hide payment method details based on selection
+        document.getElementById('paymentMethod').addEventListener('change', function () {
+            const creditCardDetails = document.getElementById('creditCardDetails');
+            const paypalDetails = document.getElementById('paypalDetails');
+            const bankTransferDetails = document.getElementById('bankTransferDetails');
+            const yapeDetails = document.getElementById('yapeDetails');
+
+            creditCardDetails.style.display = 'none';
+            paypalDetails.style.display = 'none';
+            bankTransferDetails.style.display = 'none';
+            yapeDetails.style.display = 'none';
+
+            if (this.value === 'creditCard') {
+                creditCardDetails.style.display = 'block';
+            } else if (this.value === 'paypal') {
+                paypalDetails.style.display = 'block';
+            } else if (this.value === 'bankTransfer') {
+                bankTransferDetails.style.display = 'block';
+            } else if (this.value === 'yape') {
+                yapeDetails.style.display = 'block';
+            }
+        });
+
+        // Hide payment method details by default
+        document.addEventListener('DOMContentLoaded', function () {
+            document.getElementById('creditCardDetails').style.display = 'none';
+            document.getElementById('paypalDetails').style.display = 'none';
+            document.getElementById('bankTransferDetails').style.display = 'none';
+            document.getElementById('yapeDetails').style.display = 'none';
+        });
+
+        function hideConfirmationModal() {
+            $('#confirmationModal').modal('hide');
+        }
+    </script>
+}

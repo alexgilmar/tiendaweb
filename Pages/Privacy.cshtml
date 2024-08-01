@@ -1,0 +1,139 @@
+﻿@page
+@model PrivacyModel
+@{
+    ViewData["Title"] = "Política de Privacidad";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - TiendaVirgenFatima</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.8.1/font/bootstrap-icons.min.css" />
+    <style>
+        body {
+            background: #f8f9fa;
+        }
+
+        .privacy-container {
+            background: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .privacy-header {
+            background: #007bff;
+            color: #ffffff;
+            padding: 10px;
+            border-radius: 15px 15px 0 0;
+        }
+
+        .privacy-title {
+            margin: 0;
+        }
+
+        .privacy-section {
+            padding: 20px;
+        }
+
+            .privacy-section h2 {
+                color: #007bff;
+            }
+
+            .privacy-section ul {
+                list-style: none;
+                padding-left: 0;
+            }
+
+                .privacy-section ul li {
+                    background: #e9ecef;
+                    margin-bottom: 10px;
+                    padding: 10px;
+                    border-radius: 5px;
+                }
+
+                    .privacy-section ul li strong {
+                        color: #007bff;
+                    }
+
+        .privacy-footer {
+            text-align: center;
+            padding: 10px;
+            background: #e9ecef;
+            border-radius: 0 0 15px 15px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="privacy-container">
+            <div class="privacy-header">
+                <h1 class="privacy-title text-center">@ViewData["Title"]</h1>
+            </div>
+            <div class="privacy-section">
+                <p>Esta Política de Privacidad describe cómo TiendaVirgenFatima recopila, usa y protege la información personal que proporcionas en nuestro sitio web. Al utilizar nuestro sitio web, aceptas las prácticas descritas en esta política.</p>
+            </div>
+            <div class="privacy-section">
+                <h2>1. Información que Recopilamos</h2>
+                <p>Recopilamos información personal de diversas maneras, incluyendo:</p>
+                <ul>
+                    <li><strong>Información de Contacto:</strong> Nombre, dirección de correo electrónico, número de teléfono y dirección física.</li>
+                    <li><strong>Información de Pago:</strong> Datos de tarjeta de crédito o débito, información de facturación y envío.</li>
+                    <li><strong>Información de Uso:</strong> Datos sobre cómo utilizas nuestro sitio web, incluidos los productos que ves y compras.</li>
+                </ul>
+            </div>
+            <div class="privacy-section">
+                <h2>2. Uso de la Información</h2>
+                <p>Utilizamos la información que recopilamos para:</p>
+                <ul>
+                    <li>Procesar tus pedidos y gestionar tu cuenta.</li>
+                    <li>Proporcionar servicio al cliente y soporte técnico.</li>
+                    <li>Personalizar tu experiencia en nuestro sitio web.</li>
+                    <li>Enviarte comunicaciones promocionales y ofertas especiales (si has optado por recibirlas).</li>
+                    <li>Mejorar nuestro sitio web y nuestros productos.</li>
+                </ul>
+            </div>
+            <div class="privacy-section">
+                <h2>3. Protección de la Información</h2>
+                <p>Implementamos medidas de seguridad para proteger tu información personal. Estas medidas incluyen:</p>
+                <ul>
+                    <li>Uso de tecnología de cifrado para proteger los datos de pago.</li>
+                    <li>Limitación del acceso a la información personal a empleados autorizados.</li>
+                    <li>Mantenimiento de procedimientos físicos y electrónicos para salvaguardar la información.</li>
+                </ul>
+            </div>
+            <div class="privacy-section">
+                <h2>4. Compartir Información</h2>
+                <p>No vendemos, intercambiamos ni transferimos tu información personal a terceros sin tu consentimiento, excepto para:</p>
+                <ul>
+                    <li>Proveedores de servicios de confianza que nos ayudan a operar nuestro sitio web y procesar tus transacciones.</li>
+                    <li>Cumplir con la ley, hacer cumplir nuestras políticas del sitio o proteger nuestros derechos, propiedad o seguridad.</li>
+                </ul>
+            </div>
+            <div class="privacy-section">
+                <h2>5. Cookies</h2>
+                <p>Utilizamos cookies para mejorar tu experiencia en nuestro sitio web. Las cookies son pequeños archivos que un sitio o su proveedor de servicios transfiere a tu disco duro a través de tu navegador web (si lo permites) y que permiten que los sistemas del sitio o del proveedor de servicios reconozcan tu navegador y capturen y recuerden cierta información.</p>
+            </div>
+            <div class="privacy-section">
+                <h2>6. Tus Derechos</h2>
+                <p>Tienes derecho a acceder, corregir o eliminar tu información personal en cualquier momento. Para ejercer estos derechos, por favor contáctanos utilizando la información de contacto proporcionada en nuestro sitio web.</p>
+            </div>
+            <div class="privacy-section">
+                <h2>7. Cambios en la Política de Privacidad</h2>
+                <p>Nos reservamos el derecho de actualizar esta Política de Privacidad en cualquier momento. Te notificaremos sobre cualquier cambio publicando la nueva política en nuestro sitio web. Te recomendamos revisar esta política periódicamente para estar informado sobre cómo protegemos tu información.</p>
+            </div>
+            <div class="privacy-section">
+                <h2>8. Contacto</h2>
+                <p>Si tienes alguna pregunta sobre esta Política de Privacidad, puedes contactarnos a través de la información de contacto proporcionada en nuestro sitio web.</p>
+            </div>
+            <div class="privacy-footer">
+                <p>Última actualización: 31/07/2024</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
